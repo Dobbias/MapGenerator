@@ -13,6 +13,24 @@
       "contributions": [
         "infra"
       ]
+    },
+    {
+      "login": "ProbableTrain",
+      "name": "Keir",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/33726340?v=4",
+      "profile": "https://github.com/ProbableTrain",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ersagunkuruca",
+      "name": "Ersagun Kuruca",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/8115002?v=4",
+      "profile": "https://github.com/ersagunkuruca",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

@@ -14,6 +14,10 @@ export interface NoiseParams {
     noiseAngleGlobal: number;
 }
 
+/**
+ * Combines basis fields
+ * Noise added when sampling a point in a park
+ */
 export default class TensorField {
     private basisFields: BasisField[] = [];
     private noise: SimplexNoise;
@@ -23,10 +27,15 @@ export default class TensorField {
     public river: Vector[] = [];
     public ignoreRiver = false;
 
+    public smooth = false;
+
     constructor(public noiseParams: NoiseParams) {
         this.noise = new SimplexNoise();
     }
 
+    /**
+     * Used when integrating coastline and river
+     */
     enableGlobalNoise(angle: number, size: number): void {
         this.noiseParams.globalNoise = true;
         this.noiseParams.noiseAngleGlobal = angle;
@@ -72,7 +81,7 @@ export default class TensorField {
     samplePoint(point: Vector): Tensor {
         if (!this.onLand(point)) {
             // Degenerate point
-            return new Tensor(0, [0,0]);
+            return Tensor.zero;
         }
 
         // Default field is a grid
@@ -80,8 +89,8 @@ export default class TensorField {
             return new Tensor(1, [0, 0]);
         }
 
-        const tensorAcc = new Tensor(0, [0, 0]);
-        this.basisFields.forEach(field => tensorAcc.add(field.getWeightedTensor(point)));
+        const tensorAcc = Tensor.zero;
+        this.basisFields.forEach(field => tensorAcc.add(field.getWeightedTensor(point, this.smooth), this.smooth));
 
         // Add rotational noise for parks - range -pi/2 to pi/2
         if (this.parks.some(p => PolygonUtil.insidePolygon(point, p))) {

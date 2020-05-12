@@ -8,6 +8,9 @@ import {BasisField} from '../impl/basis_field';
 import Util from '../util';
 import Vector from '../vector';
 
+/**
+ * Extension of TensorField that handles interaction with dat.GUI
+ */
 export default class TensorFieldGUI extends TensorField {
     private TENSOR_LINE_DIAMETER = 20;
     private TENSOR_SPAWN_SCALE = 0.7;  // How much to shrink worldDimensions to find spawn point
@@ -25,6 +28,7 @@ export default class TensorFieldGUI extends TensorField {
         };
 
         this.guiFolder.add(tensorFieldGuiObj, 'reset');
+        this.guiFolder.add(this, 'smooth');
         this.guiFolder.add(tensorFieldGuiObj, 'setRecommended');
         this.guiFolder.add(tensorFieldGuiObj, 'addRadial');
         this.guiFolder.add(tensorFieldGuiObj, 'addGrid');
@@ -49,7 +53,7 @@ export default class TensorFieldGUI extends TensorField {
     addRadialRandom(): void {
         const width = this.domainController.worldDimensions.x;
         this.addRadial(this.randomLocation(),
-            Util.randomRange(width/10, width/5),  // Size
+            Util.randomRange(width / 10, width / 5),  // Size
             Util.randomRange(50));  // Decay
     }
 
@@ -60,9 +64,9 @@ export default class TensorFieldGUI extends TensorField {
     private addGridAtLocation(location: Vector): void {
         const width = this.domainController.worldDimensions.x;
         this.addGrid(location,
-            Util.randomRange(width/4, width),  // Size
+            Util.randomRange(width / 4, width),  // Size
             Util.randomRange(50),  // Decay
-            Util.randomRange(Math.PI/2));
+            Util.randomRange(Math.PI / 2));
     }
 
     /**
@@ -132,17 +136,20 @@ export default class TensorFieldGUI extends TensorField {
         
         // Function to deregister from drag controller
         const deregisterDrag = this.dragController.register(
-            () => field.centre, field.dragMoveListener.bind(field));
-        const removeFieldObj = {remove: (): void => this.removeFieldGUI.bind(this)(field, folder, deregisterDrag)};
+            () => field.centre,
+            field.dragMoveListener.bind(field),
+            field.dragStartListener.bind(field)
+        );
+        const removeFieldObj = {remove: () => this.removeFieldGUI(field, deregisterDrag)};
         
         // Give dat gui removeField button
         folder.add(removeFieldObj, 'remove');
-        field.setGui(folder);
+        field.setGui(this.guiFolder, folder);
     }
 
-    private removeFieldGUI(field: BasisField, folder: dat.GUI, deregisterDrag: (() => void)): void {
+    private removeFieldGUI(field: BasisField, deregisterDrag: (() => void)): void {
         super.removeField(field);
-        this.guiFolder.removeFolder(folder);
+        field.removeFolderFromParent();
         // Deregister from drag controller
         deregisterDrag();
     }
